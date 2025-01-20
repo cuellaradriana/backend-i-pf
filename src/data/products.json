@@ -1,0 +1,24 @@
+[
+	{
+		"id": 1,
+		"status": true,
+		"title": "Zapatillas Nike",
+		"description": "Zapatillas Running, color blanco",
+		"code": "123abc",
+		"price": 205,
+		"stock": 20,
+		"category": "Zapatillas",
+		"thumbnails": []
+	},
+	{
+		"id": 2,
+		"status": true,
+		"title": "Zapatillas Puma",
+		"description": "Zapatillas Training, color blanco",
+		"code": "123ghi",
+		"price": 180,
+		"stock": 20,
+		"category": "Deportes",
+		"thumbnails": []
+	}
+]
