@@ -6,10 +6,10 @@ import {
     validateId,
     validateNoIdInBody,
 } from '../utils/validators.js';
+import { io } from '../app.js';
 
 export const router = Router();
-const productsPath = './src/data/products.json';
-
+export const productsPath = './src/data/products.json';
 ProductManager.setPath(productsPath);
 
 router.get('/', async (req, res) => {
@@ -58,6 +58,7 @@ router.post('/', async (req, res) => {
             });
         }
         const product = await ProductManager.addProduct(req.body);
+        req.io.emit('newProduct', product);
         res.setHeader('Content-Type', 'application/json');
         res.status(201).json({ product });
     } catch (error) {
@@ -102,6 +103,7 @@ router.delete('/:pid', async (req, res) => {
             return res.status(400).json({ error: isValidId.error });
         }
         const productToDelete = await ProductManager.deleteProduct(pid);
+        req.io.emit('deleteProduct', pid);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(productToDelete);
     } catch (error) {

@@ -1,0 +1,14 @@
+<main>
+    <h2>Productos</h2>
+    <div id='renderProducts'>
+        {{#each products}}
+            <div id={{id}}>
+                <h3>{{title}}</h3>
+                <p>{{description}}</p>
+                <p>{{price}}</p>
+                <img src='{{getThumbnail thumbnails 0}}' alt='{{title}}' />
+            </div>
+        {{/each}}
+    </div>
+
+</main>

@@ -8,7 +8,9 @@
 		"price": 205,
 		"stock": 20,
 		"category": "Zapatillas",
-		"thumbnails": []
+		"thumbnails": [
+			"https://www.moov.com.ar/on/demandware.static/-/Sites-365-dabra-catalog/default/dwa7620a4a/products/NIFD6409-400/NIFD6409-400-6.JPG"
+		]
 	},
 	{
 		"id": 2,
@@ -19,6 +21,8 @@
 		"price": 180,
 		"stock": 20,
 		"category": "Deportes",
-		"thumbnails": []
+		"thumbnails": [
+			"https://images.puma.net/images/396475/01/sv01/fnd/ARG/w/600/h/600/fmt/png/bg/%23FAFAFA"
+		]
 	}
 ]
