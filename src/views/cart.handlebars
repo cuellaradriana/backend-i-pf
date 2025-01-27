@@ -1,0 +1,26 @@
+<h2>Carrito</h2>
+
+<div id='cartContainer'>
+    <div id='cartProducts'>
+        {{#each cart.products}}
+            <div id='{{productId._id}}'>
+                <h3>{{productId.title}}</h3>
+                <img
+                    src='{{getThumbnail productId.thumbnails 0}}'
+                    alt='{{productId.title}}'
+                />
+                <p>Precio unitario: $ {{productId.price}}</p>
+                <p>Cantidad: {{quantity}}</p>
+                <p>Total: $ {{total}}</p>
+                <button id='deleteProduct'>Eliminar del carrito</button>
+            </div>
+        {{/each}}
+    </div>
+    <div id='totalCartContainer'>
+        <p id='totalCart'>Total: $ {{cart.totalCart}}</p>
+    </div>
+</div>
+
+<div id='buttonContainer'>
+    <button id='deleteCart'>Eliminar Carrito</button>
+</div>

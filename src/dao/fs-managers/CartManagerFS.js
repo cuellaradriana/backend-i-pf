@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { generateId } from '../utils/manager.helpers.js';
-import { ProductManager } from './ProductManager.js';
+import { ProductManager } from './fs-managers/ProductManagerFS.js';
 
 export class CartManager {
     static #path = '';

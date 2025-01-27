@@ -6,9 +6,13 @@ import { router as cartsRouter } from './routes/carts.routes.js';
 import { router as viewsRouter } from './routes/views.routes.js';
 import { engine } from 'express-handlebars';
 import { Server } from 'socket.io';
+import mongoose from 'mongoose';
+import { config } from './config.js';
+// import { seedDatabase } from './utils/seedData.js';
 
 const app = express();
-const PORT = 8080;
+const PORT = config.PORT;
+const MONGO_URL = config.DATABASE_URL;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,3 +48,17 @@ export const io = new Server(server);
 io.on('connection', (socket) => {
     console.log(`Cliente conectado con id: ${socket.id}`);
 });
+
+const dbConnection = async () => {
+    try {
+        await mongoose.connect(MONGO_URL, {
+            dbName: 'Coder-ecommerce',
+        });
+        console.log('Base de datos conectada');
+        // seedDatabase();
+    } catch (error) {
+        console.log(`Error: ${error.message}`);
+    }
+};
+
+dbConnection();

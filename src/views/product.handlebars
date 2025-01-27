@@ -1,0 +1,16 @@
+<main>
+    <h2>{{product.title}}</h2>
+    <div id='productDetail' id='{{product._id}}'>
+        <div id='imgContainer'>
+            <img src='{{getThumbnail product.thumbnails 0}}' alt='{{title}}' />
+        </div>
+        <div id='infoContainer'>
+            <p>{{product.description}}</p>
+            <p>Precio: $ {{product.price}}</p>
+            <p>Stock disponible: {{product.stock}}</p>
+            <button id='addToCart'>Agregar al carrito</button>
+        </div>
+
+    </div>
+
+</main>

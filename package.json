@@ -14,8 +14,11 @@
     "description": "",
     "dependencies": {
         "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "express-handlebars": "^8.0.1",
+        "mongoose": "^8.9.5",
+        "mongoose-paginate-v2": "^1.9.0",
         "nodemon": "^3.1.9",
         "socket.io": "^4.8.1"
     },

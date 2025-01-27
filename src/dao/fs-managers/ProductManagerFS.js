@@ -3,7 +3,7 @@ import {
     checkIfExistsByField,
     generateId,
     validateTypeOfFields,
-} from '../utils/manager.helpers.js';
+} from '../../utils/manager.helpers.js';
 
 export class ProductManager {
     static #path = '';

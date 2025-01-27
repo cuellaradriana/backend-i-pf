@@ -1,113 +1,134 @@
 import { Router } from 'express';
-import { ProductManager } from '../dao/ProductManager.js';
 import {
     findEmptyFieldsProducts,
     validateAllowedFields,
-    validateId,
     validateNoIdInBody,
+    validateQueries,
+    // validateId,
 } from '../utils/validators.js';
-import { io } from '../app.js';
+import { ProductsManager } from '../dao/ProductsManager.js';
+import { manageErrorServer, manageErrorClient } from '../utils/errors.js';
+import { isValidObjectId } from 'mongoose';
+
+//!! Para usar file system
+// import { ProductManager } from '../dao/fs-managers/ProductManagerFS.js';
+// export const productsPath = './src/data/products.json';
+// ProductManager.setPath(productsPath);
 
 export const router = Router();
-export const productsPath = './src/data/products.json';
-ProductManager.setPath(productsPath);
 
 router.get('/', async (req, res) => {
+    const { limit, page, query, value, sort } = req.query;
+    const isValid = validateQueries(req.query);
+    if (!isValid) return;
     try {
-        const { limit } = req.query;
-        const products = await ProductManager.getProducts();
-        const limitNumber = limit ? parseInt(limit) : products.length;
-        const limitedProducts = products.slice(0, limitNumber);
+        const products = await ProductsManager.getProducts(
+            {
+                limit,
+                page,
+                query,
+                value,
+                sort,
+            },
+            'products'
+        );
 
         res.setHeader('Content-Type', 'application/json');
-        res.status(200).json({ products: limitedProducts });
+        res.status(200).json(products);
     } catch (error) {
-        res.status(500).json({
-            error: 'Hubo un error al recuperar los productos',
-        });
+        manageErrorServer(res, { status: 'error', message: error.message });
     }
 });
 
 router.get('/:pid', async (req, res) => {
+    let { pid } = req.params;
+    if (!isValidObjectId(pid)) {
+        return manageErrorClient(res, 400, 'ID inválido');
+    }
     try {
-        let { pid } = req.params;
-        pid = parseInt(pid);
-        const isValidId = validateId(pid);
-        if (!isValidId.valid) {
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(400).json({ error: isValidId.error });
+        const product = await ProductsManager.getProductById(pid);
+        if (!product) {
+            return manageErrorClient(res, 404, 'Producto no encontrado');
         }
-        const product = await ProductManager.getProductById(pid);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json({ product });
     } catch (error) {
-        res.setHeader('Content-Type', 'application/json');
-        res.status(404).json({ error: error.message });
+        manageErrorServer(res, error);
     }
 });
 
 router.post('/', async (req, res) => {
+    const { thumbnails, ...fieldsToValidate } = req.body;
+    const noIdInBody = validateNoIdInBody(req.body);
+    const emptyFields = findEmptyFieldsProducts(fieldsToValidate);
+    if (!emptyFields.valid || !noIdInBody.valid) {
+        return manageErrorClient(
+            res,
+            400,
+            emptyFields.error || noIdInBody.error
+        );
+    }
     try {
-        const { thumbnails, ...fieldsToValidate } = req.body;
-        const noIdInBody = validateNoIdInBody(req.body);
-        const emptyFields = findEmptyFieldsProducts(fieldsToValidate);
-        if (!emptyFields.valid || !noIdInBody.valid) {
+        const exist = await ProductsManager.getProductBy({
+            ...fieldsToValidate.code,
+        });
+        if (exist) {
             res.setHeader('Content-Type', 'application/json');
-            return res.status(400).json({
-                error: emptyFields.error || noIdInBody.error,
-            });
+            return res.status(400).json({ error: 'El código ya existe' });
         }
-        const product = await ProductManager.addProduct(req.body);
-        req.io.emit('newProduct', product);
+        const newProduct = await ProductsManager.addProduct(req.body);
+        req.io.emit('addProduct', newProduct);
         res.setHeader('Content-Type', 'application/json');
-        res.status(201).json({ product });
+        res.status(201).json({ newProduct });
     } catch (error) {
-        res.setHeader('Content-Type', 'application/json');
-        res.status(400).json({ error: error.message });
+        manageErrorServer(res, error);
     }
 });
 
 router.put('/:pid', async (req, res) => {
-    try {
-        let { pid } = req.params;
-        pid = parseInt(pid);
-        const isValidId = validateId(pid);
-        const noIdInBody = validateNoIdInBody(req.body);
-        const allowedFields = validateAllowedFields(req.body);
-        if (!isValidId.valid || !allowedFields.valid || !noIdInBody.valid) {
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(400).json({
-                error:
-                    isValidId.error || noIdInBody.error || allowedFields.error,
-            });
-        }
-        const productToUpdate = await ProductManager.updateProduct(
-            pid,
-            req.body
+    let { pid } = req.params;
+    if (!isValidObjectId(pid)) {
+        return manageErrorClient(res, 400, 'ID inválido');
+    }
+    const noIdInBody = validateNoIdInBody(req.body);
+    const allowedFields = validateAllowedFields(req.body);
+    if (!allowedFields.valid || !noIdInBody.valid) {
+        return manageErrorClient(
+            res,
+            400,
+            allowedFields.error || noIdInBody.error
         );
+    }
+    const toUpdate = req.body;
+    try {
+        const productToUpdate = await ProductsManager.updateProduct(
+            pid,
+            toUpdate
+        );
+        if (!productToUpdate) {
+            return manageErrorClient(res, 404, 'Producto no encontrado');
+        }
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json({ productToUpdate });
     } catch (error) {
-        res.setHeader('Content-Type', 'application/json');
-        res.status(400).json({ error: error.message });
+        manageErrorServer(res, error);
     }
 });
 
 router.delete('/:pid', async (req, res) => {
+    let { pid } = req.params;
+    if (!isValidObjectId(pid)) {
+        return manageErrorClient(res, 400, 'ID inválido');
+    }
     try {
-        let { pid } = req.params;
-        pid = parseInt(pid);
-        const isValidId = validateId(pid);
-        if (!isValidId.valid) {
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(400).json({ error: isValidId.error });
+        const productToDelete = await ProductsManager.deleteProduct(pid);
+        if (!productToDelete) {
+            return manageErrorClient(res, 404, 'Producto no encontrado');
         }
-        const productToDelete = await ProductManager.deleteProduct(pid);
-        req.io.emit('deleteProduct', pid);
+        req.io.emit('deleteProduct', productToDelete._id);
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(productToDelete);
     } catch (error) {
-        res.setHeader('Content-Type', 'application/json');
-        res.status(400).json({ error: error.message });
+        manageErrorServer(res, error);
     }
 });

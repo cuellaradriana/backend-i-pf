@@ -8,7 +8,7 @@ const createDivProduct = (product) => {
     let description = document.createElement('p');
     let price = document.createElement('p');
     let image = document.createElement('img');
-    divProduct.id = product.id;
+    divProduct.id = product._id;
     title.textContent = product.title;
     description.textContent = product.description;
     price.textContent = `$${product.price}`;
@@ -18,12 +18,13 @@ const createDivProduct = (product) => {
     renderProducts.append(divProduct);
 };
 
-socket.on('newProduct', (product) => {
+socket.on('addProduct', (product) => {
     createDivProduct(product);
 });
 
 socket.on('deleteProduct', (productId) => {
     const product = document.getElementById(productId);
+    console.log(product);
     if (product) {
         product.remove();
     }
@@ -31,7 +32,8 @@ socket.on('deleteProduct', (productId) => {
 
 const dataProducts = async () => {
     const response = await fetch('/api/products');
-    const { products } = await response.json();
+    const data = await response.json();
+    const { payload: products } = data;
 
     products.forEach((product) => {
         createDivProduct(product);
